@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "731840459543",
+    "project_id": "mottumobileapp",
+    "storage_bucket": "mottumobileapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:731840459543:android:ebceb093b52d966eadbd52",
+        "android_client_info": {
+          "package_name": "com.gtheox.MottuMobileApp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlNkvmgHlHowNtTYVT_iFTRONA25Zgj8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
