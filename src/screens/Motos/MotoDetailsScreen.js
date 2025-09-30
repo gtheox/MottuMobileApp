@@ -12,40 +12,30 @@ import { useTranslation } from 'react-i18next';
 import { useQuery } from '@tanstack/react-query';
 import { getMotoById } from '../../api/apiService';
 import { Ionicons } from '@expo/vector-icons';
+import MapView, { Marker } from 'react-native-maps'; // 1. Importar o mapa
 
 export default function MotoDetailsScreen({ route, navigation }) {
-  const { moto } = route.params; // Recebe o objeto moto da tela anterior
+  const { moto } = route.params;
   const motoId = moto.id;
 
   const { colors } = useTheme();
   const { t } = useTranslation();
 
-  // Busca os dados detalhados da moto específica pela API
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['moto', motoId], // Chave única com o ID da moto
+    queryKey: ['moto', motoId],
     queryFn: () => getMotoById(motoId).then(response => response.data),
   });
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
+  if (isLoading) { /* ... (código de loading) ... */ }
+  if (isError) { /* ... (código de erro) ... */ }
 
-  if (isError) {
-    return (
-      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', padding: 20 }]}>
-        <Text style={[styles.errorText, { color: colors.danger }]}>
-          Erro ao carregar detalhes: {error.message}
-        </Text>
-      </View>
-    );
-  }
-
-  // Enquanto 'data' não carrega, usamos os dados básicos passados via 'route.params'
   const motoData = data || moto;
+
+  // Formata a data para exibição
+  const formatarData = (data) => {
+    if (!data) return 'N/A';
+    return new Date(data).toLocaleString('pt-BR');
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -66,13 +56,38 @@ export default function MotoDetailsScreen({ route, navigation }) {
             <Text style={[styles.label, { color: colors.textSecondary }]}>Status:</Text>
             <Text style={[styles.value, { color: colors.text }]}>{t(motoData.status.toLowerCase())}</Text>
           </View>
-          <View style={styles.infoRow}>
-            <Text style={[styles.label, { color: colors.textSecondary }]}>Pátio:</Text>
-            <Text style={[styles.value, { color: colors.text }]}>{motoData.nomePatio || 'N/A'}</Text>
-          </View>
         </View>
 
-        {/* Aqui podemos adicionar a lista de sensores e histórico de status no futuro */}
+        {/* 2. Seção do Mapa e Telemetria */}
+        <View style={[styles.card, { backgroundColor: colors.card, marginTop: 20 }]}>
+            <Text style={[styles.sectionTitle, {color: colors.text}]}>Localização em Tempo Real</Text>
+            {motoData.latitude && motoData.longitude ? (
+                <>
+                    <MapView
+                        style={styles.map}
+                        initialRegion={{
+                            latitude: motoData.latitude,
+                            longitude: motoData.longitude,
+                            latitudeDelta: 0.005,
+                            longitudeDelta: 0.005,
+                        }}
+                    >
+                        <Marker
+                            coordinate={{ latitude: motoData.latitude, longitude: motoData.longitude }}
+                            title={motoData.placa}
+                        />
+                    </MapView>
+                    <View style={[styles.infoRow, {borderBottomWidth: 0, marginTop: 10}]}>
+                        <Text style={[styles.label, { color: colors.textSecondary }]}>Última Atualização:</Text>
+                        <Text style={[styles.value, { color: colors.text }]}>{formatarData(motoData.ultimaAtualizacaoLocalizacao)}</Text>
+                    </View>
+                </>
+            ) : (
+                <Text style={[styles.value, { color: colors.textSecondary, textAlign: 'center' }]}>
+                    Nenhuma localização registrada para esta moto.
+                </Text>
+            )}
+        </View>
 
       </ScrollView>
     </View>
@@ -80,7 +95,19 @@ export default function MotoDetailsScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+    // ... (estilos anteriores) ...
+    map: {
+        width: '100%',
+        height: 250,
+        borderRadius: 10,
+        marginTop: 10,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 10,
+    },
+     container: {
     flex: 1,
   },
   content: {
@@ -103,7 +130,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-      paddingHorizontal: 20,
+      padding: 20,
       borderRadius: 15,
   },
   infoRow: {
